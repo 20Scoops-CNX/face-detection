@@ -6,7 +6,6 @@ import numpy
 import datetime
 
 camera = picamera.PiCamera()
-
 def detectionFace() :
     time.sleep(2)
     stream = io.BytesIO()
