@@ -4,6 +4,7 @@ import io
 import cv2
 import numpy
 import datetime
+import base64
 
 camera = picamera.PiCamera()
 
@@ -21,6 +22,9 @@ def detectionFace() :
             cv2.rectangle(image,(x,y),(x+w,y+h),(255,0,0),2)
         cv2.imwrite('result.jpg',image)
         stopCamera()
+        with open("result.jpg", "rb") as imageFile:
+            str = base64.b64encode(imageFile.read())
+            print(str)
     else :
         startCamera()
         
