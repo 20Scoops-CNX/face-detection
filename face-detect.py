@@ -4,11 +4,14 @@ import io
 import cv2
 import numpy
 import datetime
-import base64
+import aws
+import os
 
 camera = picamera.PiCamera()
+aws_service = aws
+date = datetime
 
-def detectionFace() :
+def detection_face() :
     time.sleep(2)
     stream = io.BytesIO()
     camera.capture(stream, format='jpeg')
@@ -18,41 +21,32 @@ def detectionFace() :
     gray = cv2.cvtColor(image,cv2.COLOR_BGR2GRAY)
     faces = face_cascade.detectMultiScale(gray, 1.1, 5)
     if len(faces) > 0 :
-        for (x,y,w,h) in faces:
-            cv2.rectangle(image,(x,y),(x+w,y+h),(255,0,0),2)
-        cv2.imwrite('result.jpg',image)
-        stopCamera()
-        with open("result.jpg", "rb") as imageFile:
-            str = base64.b64encode(imageFile.read())
-            print(str)
+        date_time = date.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
+        file_name = str(date_time) + '.jpg'
+        cv2.imwrite(os.path.join('img', file_name),image)
+        aws_service.get_image_for_search(file_name)
+        stop_camera()
     else :
-        startCamera()
+        detection_face()
+
+def stop_camera() :
+    camera.stop_preview()
         
-def startCamera() :
+def start_camera() :
     camera.resolution = (640, 480)
     camera.start_preview(fullscreen=False, window=(100,100,400,400))
-    detectionFace()
-
-def stopCamera() :
-    camera.stop_preview()
-
-def captureImage() :
-    camera.capture('/home/pi/Desktop/image.jpg')
-    camera.stop_preview()
-    print('Capture image successfully')
+    detection_face()
 
 if __name__ == "__main__":
-    startCamera()
+    start_camera()
     while True :
         try:
             command = str(raw_input('command : '))
             if command == 'stop' :
                 print('Stop Camera')
-                stopCamera()
+                stop_camera()
             elif command == 'start' :
                 print('Start Camera')
-                startCamera()
-            elif command == 'capture' :
-                captureImage()
+                start_camera()
         except ValueError:
-            print "Not a string"
+            print ('Not a string')
